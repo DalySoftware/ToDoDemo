@@ -8,7 +8,7 @@ const taskSchema = z.object({
 });
 
 type Task = z.infer<typeof taskSchema>;
-type TaskStatus = Pick<Task, "status">;
+type TaskStatus = Task["status"];
 
 export { taskStatuses };
 export type { Task, TaskStatus };
