@@ -8,8 +8,16 @@ import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
 
-const TaskCard = ({ task }: { task: Task }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const TaskCard = ({
+  task,
+  isNew,
+  onCancel,
+}: {
+  task: Task;
+  isNew?: boolean;
+  onCancel: (taskId: string) => void;
+}) => {
+  const [isEditing, setIsEditing] = useState(isNew);
   const [localTaskState, setLocalTaskState] = useState(task);
   const { mutate } = useUpsertTask();
 
@@ -17,7 +25,8 @@ const TaskCard = ({ task }: { task: Task }) => {
     mutate(localTaskState);
     return setIsEditing(false);
   };
-  const onCancel = () => {
+  const onCancelLocal = () => {
+    onCancel(task.id);
     setLocalTaskState(task);
     return setIsEditing(false);
   };
@@ -49,7 +58,7 @@ const TaskCard = ({ task }: { task: Task }) => {
               <IconButton onClick={onSave}>
                 <DoneIcon color="success" />
               </IconButton>
-              <IconButton onClick={onCancel}>
+              <IconButton onClick={onCancelLocal}>
                 <ClearIcon color="error" />
               </IconButton>
             </Stack>
