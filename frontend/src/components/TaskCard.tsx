@@ -71,7 +71,7 @@ const TaskCard = ({
             </IconButton>
           )}
         </Stack>
-        {localTaskState.description && (
+        {(localTaskState.description || isEditing) && (
           <Typography
             variant="body1"
             contentEditable={isEditing}
@@ -82,6 +82,8 @@ const TaskCard = ({
                 description: e.currentTarget.innerText,
               })
             }
+            border={isEditing && !localTaskState.description ? 1 : 0}
+            borderRadius={1}
           >
             {localTaskState.description}
           </Typography>
