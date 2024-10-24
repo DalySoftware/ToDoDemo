@@ -18,7 +18,7 @@ const UnthemedApp = () => {
 
   return (
     <>
-      <Stack direction="column" spacing={5}>
+      <Stack direction="column" spacing={5} alignItems="center">
         <AppBar position="static">
           <Toolbar>
             <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
@@ -38,7 +38,19 @@ const UnthemedApp = () => {
 const theme = createTheme({
   colorSchemes: {
     dark: true,
-    light: true,
+  },
+  components: {
+    MuiCard: {
+      defaultProps: {
+        elevation: 3
+      },
+      styleOverrides: {
+        root: {
+          borderRadius: "10px",
+          padding: "20px"
+        }
+      }
+    }
   },
 });
 
@@ -49,4 +61,4 @@ const App = () => (
   </ThemeProvider>
 );
 
-export default App;
+export default App
