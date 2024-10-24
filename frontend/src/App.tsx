@@ -9,6 +9,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import IconButton from "@mui/material/IconButton/IconButton";
 import { ToDoDisplay } from "./components/ToDoDisplay";
 import Stack from "@mui/material/Stack/Stack";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const UnthemedApp = () => {
   const { mode, setMode } = useColorScheme();
@@ -42,23 +43,27 @@ const theme = createTheme({
   components: {
     MuiCard: {
       defaultProps: {
-        elevation: 3
+        elevation: 3,
       },
       styleOverrides: {
         root: {
           borderRadius: "10px",
-          padding: "20px"
-        }
-      }
-    }
+          padding: "20px",
+        },
+      },
+    },
   },
 });
+
+const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    <UnthemedApp />
+    <QueryClientProvider client={queryClient}>
+      <UnthemedApp />
+    </QueryClientProvider>
   </ThemeProvider>
 );
 
-export default App
+export default App;
