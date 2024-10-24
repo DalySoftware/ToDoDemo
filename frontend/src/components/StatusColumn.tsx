@@ -16,9 +16,11 @@ const noOp = () => {};
 const Tasks = ({
   tasks,
   cancelNew,
+  onDelete,
 }: {
   tasks: MaybeNewTask[];
   cancelNew: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 }) =>
   tasks.map((t) => (
     <TaskCard
@@ -26,6 +28,7 @@ const Tasks = ({
       key={t.id}
       isNew={t.isNew}
       onCancel={t.isNew ? cancelNew : noOp}
+      onDelete={onDelete}
     />
   ));
 
@@ -40,7 +43,7 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
   const { data: tasks } = useGetTasksByStatus(status);
   const [localTasks, setLocalTasks] = useState<MaybeNewTask[]>(tasks);
 
-  const cancelNew = (taskId: string) =>
+  const excludeTask = (taskId: string) =>
     setLocalTasks((old) => old.filter((t) => t.id != taskId));
 
   return (
@@ -60,7 +63,11 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
         <StatusIcon status={status} />
       </Stack>
       <Suspense fallback={<CircularProgress sx={{ alignSelf: "center" }} />}>
-        <Tasks tasks={localTasks} cancelNew={cancelNew} />
+        <Tasks
+          tasks={localTasks}
+          cancelNew={excludeTask}
+          onDelete={excludeTask}
+        />
       </Suspense>
       <Button
         startIcon={<AddIcon fontSize="large" color="success" />}

@@ -1,5 +1,5 @@
 import Stack from "@mui/material/Stack/Stack";
-import { Task, useUpsertTask } from "../api/tasks";
+import { Task, useDeleteTask, useUpsertTask } from "../api/tasks";
 import Card from "@mui/material/Card/Card";
 import Typography from "@mui/material/Typography/Typography";
 import IconButton from "@mui/material/IconButton/IconButton";
@@ -7,28 +7,36 @@ import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const TaskCard = ({
   task,
   isNew,
   onCancel,
+  onDelete,
 }: {
   task: Task;
   isNew?: boolean;
   onCancel: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
 }) => {
   const [isEditing, setIsEditing] = useState(isNew);
   const [localTaskState, setLocalTaskState] = useState(task);
-  const { mutate } = useUpsertTask();
+  const { mutate: upsert } = useUpsertTask();
+  const { mutate: deleteTask } = useDeleteTask();
 
   const onSave = () => {
-    mutate(localTaskState);
+    upsert(localTaskState);
     return setIsEditing(false);
   };
-  const onCancelLocal = () => {
-    onCancel(task.id);
+  const onCancelEdit = () => {
+    onCancel(localTaskState.id);
     setLocalTaskState(task);
     return setIsEditing(false);
+  };
+  const onDeleteTask = () => {
+    deleteTask(localTaskState);
+    onDelete(localTaskState.id);
   };
 
   return (
@@ -58,8 +66,8 @@ const TaskCard = ({
               <IconButton onClick={onSave}>
                 <DoneIcon color="success" />
               </IconButton>
-              <IconButton onClick={onCancelLocal}>
-                <ClearIcon color="error" />
+              <IconButton onClick={onCancelEdit}>
+                <ClearIcon color="warning" />
               </IconButton>
             </Stack>
           ) : (
@@ -87,6 +95,11 @@ const TaskCard = ({
           >
             {localTaskState.description}
           </Typography>
+        )}
+        {isEditing && !isNew && (
+          <IconButton sx={{ alignSelf: "end" }} onClick={onDeleteTask}>
+            <DeleteIcon color="error" />
+          </IconButton>
         )}
       </Stack>
     </Card>
