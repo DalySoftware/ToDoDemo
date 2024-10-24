@@ -21,7 +21,7 @@ const TaskCard = ({ task }: { task: Task }) => (
 
 const Tasks = ({ status }: { status: TaskStatus }) => {
   const { data: tasks } = useGetTasksByStatus(status);
-  return tasks.map((t) => <TaskCard task={t} key={t.title} />);
+  return tasks.map((t) => <TaskCard task={t} key={t.id} />);
 };
 
 const StatusColumn = ({ status }: { status: TaskStatus }) => {

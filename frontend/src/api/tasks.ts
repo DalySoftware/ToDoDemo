@@ -1,5 +1,6 @@
 import {
-  useQuery,
+  QueryClient,
+  useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import { z } from "zod";
 
 const taskStatuses = ["To Do", "In Progress", "Done"] as const;
 const taskSchema = z.object({
+  id: z.string(),
   title: z.string(),
   description: z.optional(z.string()),
 });
@@ -24,11 +26,13 @@ type TaskResponse = z.infer<typeof taskResponseSchema>;
 const mockResponse: TaskResponse = {
   "To Do": [
     {
+      id: crypto.randomUUID(),
       title: "Deploy the code",
     },
   ],
   "In Progress": [
     {
+      id: crypto.randomUUID(),
       title: "Test the code",
       description:
         "This is a very long description of testing. I need to make this long so I can see what long descriptions look like.",
@@ -36,6 +40,7 @@ const mockResponse: TaskResponse = {
   ],
   Done: [
     {
+      id: crypto.randomUUID(),
       title: "Write the code",
     },
   ],
@@ -66,5 +71,43 @@ const useGetTasksByStatus = (status: TaskStatus) => {
   });
 };
 
-export { taskStatuses, useGetTasksByStatus };
+const excludeTask = (tasks: Task[], taskIdToExclude: string) =>
+  tasks.filter((t) => t.id != taskIdToExclude);
+
+// It's a cheap operation to invalidate the client filtered queries
+// Eg this invalidates ["tasks", "To Do"] but not ["tasks"]
+const invalidateFilteredQueries = (client: QueryClient) => {
+  client.invalidateQueries({
+    predicate: (query) =>
+      query.queryKey[0] == "tasks" &&
+      taskStatuses.includes(query.queryKey[1] as TaskStatus),
+  });
+};
+
+const useUpsertTask = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (task: Task) => {},
+    onSuccess: (_, task) => {
+      client.setQueryData(["tasks"], (old: Task[]) => [
+        ...excludeTask(old, task.id),
+        task,
+      ]);
+      invalidateFilteredQueries(client);
+    },
+  });
+};
+
+const useDeleteTask = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (task: Task) => {},
+    onSuccess: (_, task) =>
+      client.setQueryData(["tasks", task.status], (old: Task[]) =>
+        excludeTask(old, task.id),
+      ),
+  });
+};
+
+export { taskStatuses, useGetTasksByStatus, useUpsertTask, useDeleteTask };
 export type { Task, TaskStatus };
