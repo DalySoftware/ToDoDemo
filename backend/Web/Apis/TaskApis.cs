@@ -1,3 +1,4 @@
+using Google.Apis.Auth.AspNetCore3;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ToDoDemoBackend.Web.Models;
 using ToDoDemoBackend.Web.Persistence;
@@ -12,13 +13,19 @@ internal static class TaskApis
 {
     internal static void MapTaskApis(this WebApplication app)
     {
-        app.MapGet("/tasks", GetTasks);
-        app.MapPost("/tasks", PostTasks);
-        app.MapDelete("/tasks/{taskId}", DeleteTaskId);
+        var group = app.MapGroup("/tasks").RequireAuthorization();
+        group.MapGet("/", GetTasks);
+        group.MapPost("/", PostTasks);
+        group.MapDelete("/{taskId}", DeleteTaskId);
     }
 
-    private static async Task<GetTasksDto> GetTasks(TaskRepository repository)
+    private static async Task<GetTasksDto> GetTasks(
+        TaskRepository repository,
+        IGoogleAuthProvider auth
+    )
     {
+        Console.WriteLine((await auth.GetCredentialAsync()).UnderlyingCredential.ToString());
+        // Console.WriteLine(userCredential.UserId);
         var tasks = await repository.GetAllTasks();
         return tasks
             .GroupBy(task => task.Status)

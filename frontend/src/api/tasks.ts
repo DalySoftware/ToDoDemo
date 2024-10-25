@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { z } from "zod";
 import config from "../config";
+import { User } from "../App";
 
 const taskStatuses = ["To Do", "In Progress", "Done"] as const;
 const taskSchema = z.object({
@@ -26,8 +27,12 @@ type TaskResponse = z.infer<typeof taskResponseSchema>;
 
 const baseUrl = config.BACKEND_BASE_URL;
 
-const getTasks = async (): Promise<TaskResponse> => {
-  const response = await fetch(baseUrl + "/tasks");
+const getTasks = async (user: User): Promise<TaskResponse> => {
+  const response = await fetch(baseUrl + "/tasks", {
+    headers: {
+      Authorization: `Bearer ${user.accessToken}`,
+    },
+  });
   const json = await response.json();
   const result = await taskResponseSchema.safeParseAsync(json);
   if (result.error) {
@@ -37,21 +42,21 @@ const getTasks = async (): Promise<TaskResponse> => {
   return result.data;
 };
 
-const useGetTasksWithCache = async () => {
+const useGetTasksWithCache = async (user: User) => {
   const client = useQueryClient();
   const data = await client.fetchQuery({
     queryKey: ["tasks"],
-    queryFn: getTasks,
+    queryFn: () => getTasks(user),
   });
 
   return data;
 };
 
-const useGetTasksByStatus = (status: TaskStatus) => {
+const useGetTasksByStatus = (status: TaskStatus, user: User) => {
   return useSuspenseQuery({
     queryKey: ["tasks", status],
     queryFn: async () => {
-      const response = await useGetTasksWithCache();
+      const response = await useGetTasksWithCache(user);
       return response[status].map((t) => ({ ...t, status: status }));
     },
   });

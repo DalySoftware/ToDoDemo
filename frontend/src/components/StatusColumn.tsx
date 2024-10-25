@@ -8,6 +8,7 @@ import CircularProgress from "@mui/material/CircularProgress/CircularProgress";
 import { TaskCard } from "./TaskCard";
 import Button from "@mui/material/Button/Button";
 import AddIcon from "@mui/icons-material/Add";
+import { User } from "../App";
 
 type MaybeNewTask = Task & { isNew?: boolean };
 
@@ -42,8 +43,8 @@ const defaultTask = (status: TaskStatus): MaybeNewTask => ({
   isNew: true,
 });
 
-const StatusColumn = ({ status }: { status: TaskStatus }) => {
-  const { data: tasks } = useGetTasksByStatus(status);
+const StatusColumn = ({ status, user }: { status: TaskStatus; user: User }) => {
+  const { data: tasks } = useGetTasksByStatus(status, user);
   const [localTasks, setLocalTasks] = useState<MaybeNewTask[]>(tasks);
 
   const removeTask = (taskId: string) =>

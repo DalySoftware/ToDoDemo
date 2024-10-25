@@ -31,6 +31,7 @@ const LoginLogoutButton = ({
 }) => {
   const login = useGoogleLogin({
     onSuccess: (response) => {
+      console.log(response);
       setUser({ accessToken: response.access_token });
     },
   });
@@ -39,8 +40,8 @@ const LoginLogoutButton = ({
     setUser(undefined);
   };
   return !!user ? (
-    <IconButton>
-      <LogoutIcon onClick={logout} />
+    <IconButton onClick={logout}>
+      <LogoutIcon />
     </IconButton>
   ) : (
     <Button onClick={() => login()} endIcon={<LoginIcon color="primary" />}>

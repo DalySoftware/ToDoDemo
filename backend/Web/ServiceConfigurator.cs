@@ -4,6 +4,6 @@ namespace ToDoDemoBackend.Web;
 
 internal static class ServiceConfigurator
 {
-    internal static void AddToDoDemoServices(this IServiceCollection services) =>
+    internal static IServiceCollection AddToDoDemoServices(this IServiceCollection services) =>
         services.AddTransient<TaskRepository>();
 }

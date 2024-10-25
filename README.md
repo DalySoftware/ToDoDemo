@@ -11,7 +11,9 @@ Since this is just a demo project, there are some shortcuts taken:
 
 ## Running locally
 
-To run the site locally, you can use `runLocal.sh`. This will start the backend and frontend in parallel. Press ctrl+c twice to exit both.
+You need to set up the Google OAuth client secret in order to allow authentication. It is stored in the environment variable `GOOGLE_OAUTH_CLIENT_SECRET`.
+
+To run the site, you can use `runLocal.sh`. This will start the backend and frontend in parallel. Press ctrl+c twice to exit both.
 
 ## Accessing the deployed app
 

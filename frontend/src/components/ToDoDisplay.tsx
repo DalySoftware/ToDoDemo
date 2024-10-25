@@ -12,7 +12,10 @@ const ToDoDisplay = ({ user }: { user?: User }) => {
       width="100%"
       justifyContent="center"
     >
-      {user && taskStatuses.map((s) => <StatusColumn status={s} key={s} />)}
+      {user &&
+        taskStatuses.map((s) => (
+          <StatusColumn status={s} key={s} user={user} />
+        ))}
     </Box>
   );
 };
