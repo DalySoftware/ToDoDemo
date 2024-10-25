@@ -7,7 +7,7 @@ const ToDoDisplay = () => {
     <Box
       display="grid"
       gridTemplateColumns="repeat(auto-fit, minmax(30ch, 400px))"
-      columnGap={5}
+      gap={5}
       width="100%"
       justifyContent="center"
     >
