@@ -9,7 +9,12 @@ internal class TaskRepository : IDisposable
     private SqliteConnection _connection = SqliteUtilities.GetDbConnection();
 
     private static ToDoTask ReadAsTask(SqliteDataReader reader) =>
-        new(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
+        new(
+            reader.GetString(0),
+            reader.GetString(1),
+            reader.IsDBNull(2) ? null : reader.GetString(2),
+            reader.GetString(3)
+        );
 
     internal async Task<IReadOnlyCollection<ToDoTask>> GetAllTasks()
     {
@@ -77,8 +82,10 @@ internal class TaskRepository : IDisposable
             [
                 new("$Id", task.Id),
                 new("$Title", task.Title),
-                new("$Description", task.Description),
                 new("$Status", task.Status),
+                task.Description == null
+                    ? new("$Description", DBNull.Value)
+                    : new($"Description", task.Description),
             ]
         );
 
