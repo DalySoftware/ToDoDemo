@@ -87,7 +87,7 @@ const invalidateFilteredQueries = (client: QueryClient) => {
 const useUpsertTask = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (task: Task) => {},
+    mutationFn: async (_: Task) => {},
     onSuccess: (_, task) => {
       client.setQueryData(["tasks"], (old: Task[]) => [
         ...excludeTask(old, task.id),
@@ -101,7 +101,7 @@ const useUpsertTask = () => {
 const useDeleteTask = () => {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (task: Task) => {},
+    mutationFn: async (_: Task) => {},
     onSuccess: (_, task) =>
       client.setQueryData(["tasks", task.status], (old: Task[]) =>
         excludeTask(old, task.id),
