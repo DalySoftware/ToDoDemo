@@ -17,10 +17,12 @@ const Tasks = ({
   tasks,
   cancelNew,
   onDelete,
+  onUpsert,
 }: {
   tasks: MaybeNewTask[];
   cancelNew: (taskId: string) => void;
   onDelete: (taskId: string) => void;
+  onUpsert: (newTask: Task) => void;
 }) =>
   tasks.map((t) => (
     <TaskCard
@@ -29,6 +31,7 @@ const Tasks = ({
       isNew={t.isNew}
       onCancel={t.isNew ? cancelNew : noOp}
       onDelete={onDelete}
+      onUpsert={onUpsert}
     />
   ));
 
@@ -43,7 +46,7 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
   const { data: tasks } = useGetTasksByStatus(status);
   const [localTasks, setLocalTasks] = useState<MaybeNewTask[]>(tasks);
 
-  const excludeTask = (taskId: string) =>
+  const removeTask = (taskId: string) =>
     setLocalTasks((old) => old.filter((t) => t.id != taskId));
 
   return (
@@ -65,8 +68,15 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
       <Suspense fallback={<CircularProgress sx={{ alignSelf: "center" }} />}>
         <Tasks
           tasks={localTasks}
-          cancelNew={excludeTask}
-          onDelete={excludeTask}
+          cancelNew={removeTask}
+          onDelete={removeTask}
+          onUpsert={(newTask: Task) =>
+            setLocalTasks((old) =>
+              old.map((existing) =>
+                existing.id == newTask.id ? newTask : existing,
+              ),
+            )
+          }
         />
       </Suspense>
       <Button

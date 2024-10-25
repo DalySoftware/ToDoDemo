@@ -14,11 +14,13 @@ const TaskCard = ({
   isNew,
   onCancel,
   onDelete,
+  onUpsert,
 }: {
   task: Task;
   isNew?: boolean;
   onCancel: (taskId: string) => void;
   onDelete: (taskId: string) => void;
+  onUpsert: (newTask: Task) => void;
 }) => {
   const [isEditing, setIsEditing] = useState(isNew);
   const [localTaskState, setLocalTaskState] = useState(task);
@@ -27,6 +29,7 @@ const TaskCard = ({
 
   const onSave = () => {
     upsert(localTaskState);
+    onUpsert(localTaskState);
     return setIsEditing(false);
   };
   const onCancelEdit = () => {
