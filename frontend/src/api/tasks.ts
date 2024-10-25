@@ -61,18 +61,17 @@ const useGetTasksByStatus = (status: TaskStatus) => {
 
 const excludeTask = (tasks: Task[], taskIdToExclude: string) =>
   tasks.filter((t) => t.id != taskIdToExclude);
-
-// It's a cheap operation to invalidate the client filtered queries
-// Eg this invalidates ["tasks", "To Do"] but not ["tasks"]
-const invalidateFilteredQueries = (client: QueryClient) => {
-  client.invalidateQueries({
-    predicate: (query) =>
-      query.queryKey[0] == "tasks" &&
-      taskStatuses.includes(query.queryKey[1] as TaskStatus),
+const updateDependentQueries = (client: QueryClient) => {
+  const baseData = client.getQueryData(["tasks"]) as TaskResponse;
+  taskStatuses.forEach((status) => {
+    client.setQueryData(
+      ["tasks", status],
+      baseData[status].map((t) => ({ ...t, status: status })),
+    );
   });
 };
 
-const useUpsertTask = () => {
+const useUpsertTask = (initialStatus: TaskStatus) => {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (task: Task) => {
@@ -84,11 +83,33 @@ const useUpsertTask = () => {
       });
     },
     onSuccess: (_, task) => {
-      client.setQueryData(["tasks"], (old: Task[]) => [
-        ...excludeTask(old, task.id),
-        task,
-      ]);
-      invalidateFilteredQueries(client);
+      client.setQueryData(["tasks"], (old: Record<TaskStatus, Task[]>) => {
+        if (
+          task.status == initialStatus &&
+          old[task.status].some((t) => t.id === task.id)
+        ) {
+          return {
+            ...old,
+            [task.status]: old[task.status].map((existing) =>
+              existing.id === task.id ? task : existing,
+            ),
+          };
+        }
+
+        if (task.status == initialStatus) {
+          return {
+            ...old,
+            [task.status]: [...old[task.status], task],
+          };
+        }
+
+        return {
+          ...old,
+          [initialStatus]: excludeTask(old[initialStatus], task.id),
+          [task.status]: [...old[task.status], task],
+        };
+      });
+      updateDependentQueries(client);
     },
   });
 };
@@ -102,10 +123,13 @@ const useDeleteTask = () => {
         credentials: "include",
       });
     },
-    onSuccess: (_, task) =>
-      client.setQueryData(["tasks", task.status], (old: Task[]) =>
-        excludeTask(old, task.id),
-      ),
+    onSuccess: (_, task) => {
+      client.setQueryData(["tasks"], (old: Record<TaskStatus, Task[]>) => ({
+        ...old,
+        [task.status]: excludeTask(old[task.status], task.id),
+      }));
+      updateDependentQueries(client);
+    },
   });
 };
 

@@ -3,39 +3,19 @@ import Typography from "@mui/material/Typography/Typography";
 import { Task, TaskStatus, useGetTasksByStatus } from "../api/tasks";
 import Stack from "@mui/material/Stack/Stack";
 import { StatusIcon } from "./StatusChip";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress/CircularProgress";
 import { TaskCard } from "./TaskCard";
 import Button from "@mui/material/Button/Button";
 import AddIcon from "@mui/icons-material/Add";
 
-type MaybeNewTask = Task & { isNew?: boolean };
+type ExistingTask = Task & { isNew?: false };
+type DraftTask = Task & { isNew: true };
+type MaybeTask = ExistingTask | DraftTask;
 
 const noOp = () => {};
 
-const Tasks = ({
-  tasks,
-  cancelNew,
-  onDelete,
-  onUpsert,
-}: {
-  tasks: MaybeNewTask[];
-  cancelNew: (taskId: string) => void;
-  onDelete: (taskId: string) => void;
-  onUpsert: (newTask: Task) => void;
-}) =>
-  tasks.map((t) => (
-    <TaskCard
-      task={t}
-      key={t.id}
-      isNew={t.isNew}
-      onCancel={t.isNew ? cancelNew : noOp}
-      onDelete={onDelete}
-      onUpsert={onUpsert}
-    />
-  ));
-
-const defaultTask = (status: TaskStatus): MaybeNewTask => ({
+const defaultTask = (status: TaskStatus): DraftTask => ({
   id: crypto.randomUUID(),
   title: "Enter title",
   status: status,
@@ -44,10 +24,29 @@ const defaultTask = (status: TaskStatus): MaybeNewTask => ({
 
 const StatusColumn = ({ status }: { status: TaskStatus }) => {
   const { data: tasks } = useGetTasksByStatus(status);
-  const [localTasks, setLocalTasks] = useState<MaybeNewTask[]>(tasks);
+  const [localTasks, setLocalTasks] = useState<ExistingTask[]>([]);
+  const [drafts, setDrafts] = useState<DraftTask[]>([]);
+
+  useEffect(() => setLocalTasks(tasks), [tasks]);
 
   const removeTask = (taskId: string) =>
-    setLocalTasks((old) => old.filter((t) => t.id != taskId));
+    setLocalTasks((old) => old.filter((t) => t.id !== taskId));
+
+  const removeDraft = (taskId: string) =>
+    setDrafts((old) => old.filter((t) => t.id !== taskId));
+
+  const onUpsert = (newTask: Task) => {
+    if (newTask.status !== status) {
+      removeTask(newTask.id);
+      return;
+    }
+    setLocalTasks((old) =>
+      old.map((existing) =>
+        existing.id === newTask.id ? { ...newTask, isNew: false } : existing,
+      ),
+    );
+    removeDraft(newTask.id);
+  };
 
   return (
     <Card
@@ -66,23 +65,20 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
         <StatusIcon status={status} />
       </Stack>
       <Suspense fallback={<CircularProgress sx={{ alignSelf: "center" }} />}>
-        <Tasks
-          tasks={localTasks}
-          cancelNew={removeTask}
-          onDelete={removeTask}
-          onUpsert={(newTask: Task) =>
-            setLocalTasks((old) =>
-              old.map((existing) =>
-                existing.id == newTask.id ? newTask : existing,
-              ),
-            )
-          }
-        />
+        {[...localTasks, ...drafts].map((t) => (
+          <TaskCard
+            task={t}
+            key={t.id}
+            onCancel={t.isNew ? removeDraft : noOp}
+            onDelete={removeTask}
+            onUpsert={onUpsert}
+          />
+        ))}
       </Suspense>
       <Button
         startIcon={<AddIcon fontSize="large" color="success" />}
         sx={{ marginTop: "auto" }}
-        onClick={() => setLocalTasks((old) => [...old, defaultTask(status)])}
+        onClick={() => setDrafts((old) => [...old, defaultTask(status)])}
       >
         New Task
       </Button>
@@ -91,3 +87,4 @@ const StatusColumn = ({ status }: { status: TaskStatus }) => {
 };
 
 export { StatusColumn };
+export type { MaybeTask };

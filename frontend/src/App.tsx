@@ -10,6 +10,7 @@ import IconButton from "@mui/material/IconButton/IconButton";
 import { ToDoDisplay } from "./components/ToDoDisplay";
 import Stack from "@mui/material/Stack/Stack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StrictMode } from "react";
 
 const UnthemedApp = () => {
   const { mode, setMode } = useColorScheme();
@@ -58,12 +59,14 @@ const theme = createTheme({
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <QueryClientProvider client={queryClient}>
-      <UnthemedApp />
-    </QueryClientProvider>
-  </ThemeProvider>
+  <StrictMode>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <QueryClientProvider client={queryClient}>
+        <UnthemedApp />
+      </QueryClientProvider>
+    </ThemeProvider>
+  </StrictMode>
 );
 
 export default App;
