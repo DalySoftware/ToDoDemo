@@ -112,7 +112,7 @@ internal class TaskRepository : IDisposable
     }
 
     /// <summary>
-    /// Check if a task exists and save or updated it
+    /// Check if a task exists and save or update it
     /// </summary>
     /// <returns>Number of records affected</returns>
     internal async Task<int> AddOrUpdate(ToDoTask task)
