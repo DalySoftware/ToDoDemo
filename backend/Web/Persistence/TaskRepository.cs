@@ -50,19 +50,11 @@ internal class TaskRepository : IDisposable
 
         using var reader = await command.ExecuteReaderAsync();
 
-        if (reader.RecordsAffected < 1)
+        if (!await reader.ReadAsync())
         {
             return null;
         }
-
-        if (reader.RecordsAffected > 1)
-        {
-            throw new UnreachableException(
-                $"Multiple records found with the same primary key {id}"
-            );
-        }
-
-        await reader.ReadAsync();
+        ;
         return ReadAsTask(reader);
     }
 
@@ -109,8 +101,10 @@ internal class TaskRepository : IDisposable
             [
                 new("$Id", task.Id),
                 new("$Title", task.Title),
-                new("$Description", task.Description),
                 new("$Status", task.Status),
+                task.Description == null
+                    ? new("$Description", DBNull.Value)
+                    : new($"Description", task.Description),
             ]
         );
 
@@ -125,7 +119,7 @@ internal class TaskRepository : IDisposable
     {
         var existing = await GetTask(task.Id);
 
-        return existing == null ? await Add(task) : await Update(existing);
+        return existing == null ? await Add(task) : await Update(task);
     }
 
     /// <summary>
