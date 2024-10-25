@@ -19,14 +19,16 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.x'
+          dotnet-version: "8.x"
           include-prerelease: true
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
+        working-directory: backend/Web
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        working-directory: backend/Web
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -38,7 +40,7 @@ jobs:
     runs-on: windows-latest
     needs: build
     environment:
-      name: 'Production'
+      name: "Production"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -51,7 +53,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ToDoDemo-WebApi'
-          slot-name: 'Production'
+          app-name: "ToDoDemo-WebApi"
+          slot-name: "Production"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A9817C50AAE146A280D18B74034B736C }}
           package: .
