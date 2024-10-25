@@ -27,7 +27,9 @@ type TaskResponse = z.infer<typeof taskResponseSchema>;
 const baseUrl = config.BACKEND_BASE_URL;
 
 const getTasks = async (): Promise<TaskResponse> => {
-  const response = await fetch(baseUrl + "/tasks");
+  const response = await fetch(baseUrl + "/tasks", {
+    credentials: "include",
+  });
   const json = await response.json();
   const result = await taskResponseSchema.safeParseAsync(json);
   if (result.error) {
@@ -78,6 +80,7 @@ const useUpsertTask = () => {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=utf-8" },
         body: JSON.stringify(task),
+        credentials: "include",
       });
     },
     onSuccess: (_, task) => {
@@ -96,6 +99,7 @@ const useDeleteTask = () => {
     mutationFn: async (task: Task) => {
       await fetch(baseUrl + "/tasks/" + task.id, {
         method: "DELETE",
+        credentials: "include",
       });
     },
     onSuccess: (_, task) =>

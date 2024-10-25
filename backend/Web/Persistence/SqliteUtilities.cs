@@ -12,7 +12,8 @@ internal class SqliteUtilities
                     Id TEXT PRIMARY KEY,
                     Title TEXT NOT NULL,
                     Description TEXT NULL,
-                    Status TEXT NULL
+                    Status TEXT NULL,
+                    UserId TEXT NOT NULL
                 )
             """;
 

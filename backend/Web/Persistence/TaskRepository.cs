@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Data.Sqlite;
 using ToDoDemoBackend.Web.Models;
 
@@ -16,14 +15,17 @@ internal class TaskRepository : IDisposable
             reader.GetString(3)
         );
 
-    internal async Task<IReadOnlyCollection<ToDoTask>> GetAllTasks()
+    internal async Task<IReadOnlyCollection<ToDoTask>> GetAllTasks(string userId)
     {
         await _connection.OpenAsync();
         var command = _connection.CreateCommand();
         command.CommandText = """
                 SELECT Id, Title, Description, Status
                 FROM Tasks
+                WHERE UserId = $UserId
             """;
+
+        command.Parameters.AddWithValue("$UserId", userId);
 
         using var reader = await command.ExecuteReaderAsync();
         var tasks = new List<ToDoTask>();
@@ -37,15 +39,16 @@ internal class TaskRepository : IDisposable
         return tasks;
     }
 
-    internal async Task<ToDoTask?> GetTask(string id)
+    internal async Task<ToDoTask?> GetTask(string userId, string id)
     {
         await _connection.OpenAsync();
         var command = _connection.CreateCommand();
         command.CommandText = """
                 SELECT Id, Title, Description, Status
                 FROM Tasks
-                WHERE Id = $Id
+                WHERE UserId = $UserId AND Id = $Id
             """;
+        command.Parameters.AddWithValue("$UserId", userId);
         command.Parameters.AddWithValue("$Id", id);
 
         using var reader = await command.ExecuteReaderAsync();
@@ -62,19 +65,20 @@ internal class TaskRepository : IDisposable
     /// Save the task to the database
     /// </summary>
     /// <returns>Number of records affected</returns>
-    private async Task<int> Add(ToDoTask task)
+    private async Task<int> Add(string userId, ToDoTask task)
     {
         await _connection.OpenAsync();
         var command = _connection.CreateCommand();
         command.CommandText = """
-                INSERT INTO Tasks (Id, Title, Description, Status)
-                VALUES ($Id, $Title, $Description, $Status)
+                INSERT INTO Tasks (Id, Title, Description, Status, UserId)
+                VALUES ($Id, $Title, $Description, $Status, $UserId)
             """;
         command.Parameters.AddRange(
             [
                 new("$Id", task.Id),
                 new("$Title", task.Title),
                 new("$Status", task.Status),
+                new("$UserId", userId),
                 task.Description == null
                     ? new("$Description", DBNull.Value)
                     : new($"Description", task.Description),
@@ -88,20 +92,21 @@ internal class TaskRepository : IDisposable
     /// Update an existing task in the database
     /// </summary>
     /// <returns>Number of records affected</returns>
-    private async Task<int> Update(ToDoTask task)
+    private async Task<int> Update(string userId, ToDoTask task)
     {
         await _connection.OpenAsync();
         var command = _connection.CreateCommand();
         command.CommandText = """
                 UPDATE Tasks
                 SET Title = $Title, Description = $Description, Status = $Status
-                WHERE Id = $Id
+                WHERE UserId = $UserId AND Id = $Id
             """;
         command.Parameters.AddRange(
             [
                 new("$Id", task.Id),
                 new("$Title", task.Title),
                 new("$Status", task.Status),
+                new("$UserId", userId),
                 task.Description == null
                     ? new("$Description", DBNull.Value)
                     : new($"Description", task.Description),
@@ -115,26 +120,27 @@ internal class TaskRepository : IDisposable
     /// Check if a task exists and save or update it
     /// </summary>
     /// <returns>Number of records affected</returns>
-    internal async Task<int> AddOrUpdate(ToDoTask task)
+    internal async Task<int> AddOrUpdate(string userId, ToDoTask task)
     {
-        var existing = await GetTask(task.Id);
+        var existing = await GetTask(userId, task.Id);
 
-        return existing == null ? await Add(task) : await Update(task);
+        return existing == null ? await Add(userId, task) : await Update(userId, task);
     }
 
     /// <summary>
     /// Delete a task in the database
     /// </summary>
     /// <returns>Number of records affected</returns>
-    internal async Task<int> Delete(string id)
+    internal async Task<int> Delete(string userId, string id)
     {
         await _connection.OpenAsync();
         var command = _connection.CreateCommand();
         command.CommandText = """
                 DELETE
                 FROM Tasks
-                WHERE Id = $Id
+                WHERE UserId = $UserId AND Id = $Id
             """;
+        command.Parameters.AddWithValue("$UserId", userId);
         command.Parameters.AddWithValue("$Id", id);
 
         return await command.ExecuteNonQueryAsync();
