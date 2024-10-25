@@ -1,7 +1,6 @@
 import { StatusColumn } from "./StatusColumn.tsx";
 import { taskStatuses } from "../api/tasks.ts";
 import Box from "@mui/material/Box/Box";
-import { Suspense } from "react";
 
 const ToDoDisplay = () => {
   return (
