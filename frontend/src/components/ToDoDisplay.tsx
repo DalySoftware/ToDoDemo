@@ -1,8 +1,9 @@
 import { StatusColumn } from "./StatusColumn.tsx";
 import { taskStatuses } from "../api/tasks.ts";
 import Box from "@mui/material/Box/Box";
+import { User } from "../App.tsx";
 
-const ToDoDisplay = () => {
+const ToDoDisplay = ({ user }: { user?: User }) => {
   return (
     <Box
       display="grid"
@@ -11,9 +12,7 @@ const ToDoDisplay = () => {
       width="100%"
       justifyContent="center"
     >
-      {taskStatuses.map((s) => (
-        <StatusColumn status={s} key={s} />
-      ))}
+      {user && taskStatuses.map((s) => <StatusColumn status={s} key={s} />)}
     </Box>
   );
 };
