@@ -1,5 +1,7 @@
 # To Do App Demo
 
+![image](https://github.com/user-attachments/assets/8c54351d-5133-43a1-bc2c-4a801c45a46e)
+
 This is a simple demo application of a To Do list. It uses an ASP.NET backend, written with minimal APIs, and a React frontend, written with MUI components.
 
 The app has been deployed to Azure since they provide free credits. It uses a web app for the backend and a static website for the frontend.
