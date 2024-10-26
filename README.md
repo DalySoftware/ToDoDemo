@@ -4,7 +4,7 @@
 
 This is a simple demo application of a To Do list. It uses an ASP.NET backend, written with minimal APIs, and a React frontend, written with MUI components.
 
-The app has been deployed to Azure since they provide free credits. It uses a web app for the backend and a static website for the frontend.
+The app has been deployed to Azure since they provide free credits. It uses a web app for the backend and a static website for the frontend. These are automatically deployed to the latest main commit via a Github action.
 
 Since this is just a demo project, there are some shortcuts taken:
 
