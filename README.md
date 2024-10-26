@@ -15,7 +15,8 @@ Since this is just a demo project, there are some shortcuts taken:
 
 ## Running locally
 
-To run the site locally, you can use `runLocal.sh`. This will start the backend and frontend in parallel. Press ctrl+c twice to exit both.
+You need the dotnet 8 CLI and node 23 installed (other versions will probably work fine).
+Run the site, you can use `runLocal.sh`. This will start the backend and frontend in parallel. Press ctrl+c twice to exit both.
 
 ## Accessing the deployed app
 
